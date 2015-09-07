@@ -8,10 +8,11 @@ namespace repostpolice
 {
     interface IChatBotService
     {
-        int Priority { get; set; }
+
+        int Priority { get;}
 
         bool CanHandleCommand(string command);
-        void HandleCommand(string command);
+        void HandleCommand(string command,string parameters);
 
     }
 }
