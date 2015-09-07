@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SKYPE4COMLib;
 
 namespace repostpolice
 {
-    interface IChatBotService
+    public interface IChatBotService
     {
 
         int Priority { get;}
 
         bool CanHandleCommand(string command);
-        void HandleCommand(string command,string parameters);
+        void HandleCommand(string fromHandle,string fromDisplayName, string command,string parameters);
 
     }
 }

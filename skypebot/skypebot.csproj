@@ -33,6 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -42,6 +50,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -54,16 +64,36 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChatBot.cs" />
     <Compile Include="ChatBotModule.cs" />
-    <Compile Include="CouchPotatoService.cs" />
+    <Compile Include="Data\UserContext.cs" />
+    <Compile Include="Migrations\201509072047208__first.cs" />
+    <Compile Include="Migrations\201509072047208__first.Designer.cs">
+      <DependentUpon>201509072047208__first.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201509072049113_addedPermission.cs" />
+    <Compile Include="Migrations\201509072049113_addedPermission.Designer.cs">
+      <DependentUpon>201509072049113_addedPermission.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="model\User.cs" />
+    <Compile Include="Services\couchpotato\CouchPotatoService.cs" />
     <Compile Include="IChatBot.cs" />
-    <Compile Include="IChatBotService.cs" />
-    <Compile Include="insult.cs" />
+    <Compile Include="Services\couchpotato\model\Movie.cs" />
+    <Compile Include="Services\IChatBotService.cs" />
+    <Compile Include="model\insult.cs" />
     <Compile Include="Program.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UrlHistoryItem.cs" />
+    <Compile Include="model\UrlHistoryItem.cs" />
+    <Compile Include="Utility\IAuthorizationManager.cs" />
+    <EmbeddedResource Include="Migrations\201509072047208__first.resx">
+      <DependentUpon>201509072047208__first.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509072049113_addedPermission.resx">
+      <DependentUpon>201509072049113_addedPermission.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -103,9 +133,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
