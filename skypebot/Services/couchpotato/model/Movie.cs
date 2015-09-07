@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace repostpolice.Services.couchpotato.model
+﻿namespace skypebot.Services.couchpotato.model
 {
     public class Movie
     {

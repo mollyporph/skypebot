@@ -1,18 +1,16 @@
-namespace repostpolice.Migrations
-{
-    using System;
-    using System.Data.Entity;
-    using System.Data.Entity.Migrations;
-    using System.Linq;
+using System.Data.Entity.Migrations;
+using skypebot.Data;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<repostpolice.Data.UserContext>
+namespace skypebot.Migrations
+{
+    internal sealed class Configuration : DbMigrationsConfiguration<UserContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(repostpolice.Data.UserContext context)
+        protected override void Seed(UserContext context)
         {
             //  This method will be called after migrating to the latest version.
 
