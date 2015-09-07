@@ -1,4 +1,4 @@
-﻿namespace Mambot
+﻿namespace skypebot.Services.repostpolice.model
 {
     public class Insult
     {

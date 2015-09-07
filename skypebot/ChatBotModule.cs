@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Ninject.Modules;
 
-namespace repostpolice
+namespace skypebot
 {
-    class ChatBotModule
+    class ChatBotModule : NinjectModule
     {
+        public override void Load()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

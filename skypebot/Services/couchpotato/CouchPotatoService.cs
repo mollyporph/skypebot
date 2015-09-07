@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using repostpolice.Services.couchpotato.model;
+using repostpolice;
 using repostpolice.Utility;
+using skypebot.Services.couchpotato.model;
 using SKYPE4COMLib;
 
-namespace repostpolice.Services.couchpotato
+namespace skypebot.Services.couchpotato
 {
     public class CouchPotatoService : IChatBotService
     {
-        private Dictionary<string, IEnumerable<string>> _userAllowedMovieIds;
+        private readonly Dictionary<string, IEnumerable<string>> _userAllowedMovieIds;
         public string[] Commands { get; } = { "addmovie", "getmovie" };
         private const string BestQuality = "6a1d1912dc7a48c6819ac95053892932";
         private readonly string _couchpotatoApiKey;

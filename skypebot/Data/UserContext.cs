@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data.Entity;
 using repostpolice.model;
 
-namespace repostpolice.Data
+namespace skypebot.Data
 {
     public class UserContext : DbContext 
     {

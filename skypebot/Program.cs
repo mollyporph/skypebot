@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Timers;
-using System.Linq;
-using SKYPE4COMLib;
 using System.Drawing;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using skypebot.Services.repostpolice.model;
+using SKYPE4COMLib;
 using Application = System.Windows.Forms.Application;
 using Timer = System.Timers.Timer;
 
-namespace Mambot
+namespace skypebot
 {
     public class SysTrayApp : Form
     {
@@ -27,12 +27,12 @@ namespace Mambot
         private static Timer timer;
         private static Skype skype;
         private Regex urlRegex = new Regex(@"((https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?)(?:\s)?", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        private static List<UrlHistoryItem> UrlHistory;
+        private static List<UrlHistoryItem> _urlHistory;
         private static Queue<string> Insults = new Queue<string>();
 
         public SysTrayApp()
         {
-            UrlHistory = new List<UrlHistoryItem>();
+            _urlHistory = new List<UrlHistoryItem>();
             trayMenu = new ContextMenu();
             trayMenu.MenuItems.Add("Exit", OnExit);
             trayIcon = new NotifyIcon();
@@ -74,9 +74,9 @@ namespace Mambot
                 if (!Uri.TryCreate(res.ToString(), UriKind.Absolute, out uriResult) ||
                     uriResult.Scheme != Uri.UriSchemeHttp)
                     continue;
-                if (UrlHistory.Any(x => uriResult == x.Url))
+                if (_urlHistory.Any(x => uriResult == x.Url))
                 {
-                    WarnOfRepost(msg, UrlHistory.FirstOrDefault(x => uriResult == x.Url));
+                    WarnOfRepost(msg, _urlHistory.FirstOrDefault(x => uriResult == x.Url));
                 }
                 else
                 {
@@ -88,7 +88,7 @@ namespace Mambot
 
         private void SavePost(Uri uriResult, string fromDisplayName)
         {
-            UrlHistory.Add(new UrlHistoryItem
+            _urlHistory.Add(new UrlHistoryItem
             {
                 PostedAt = DateTime.Now,
                 Url = uriResult,
@@ -110,7 +110,7 @@ namespace Mambot
             {
                 DownLoadMoreInsults();
             }
-            UrlHistory.RemoveAll(x => x.PostedAt < DateTime.Now.AddHours(-6));
+            _urlHistory.RemoveAll(x => x.PostedAt < DateTime.Now.AddHours(-6));
         }
 
         private static void DownLoadMoreInsults()
