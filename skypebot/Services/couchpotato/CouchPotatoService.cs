@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
@@ -19,13 +20,13 @@ namespace skypebot.Services.couchpotato
         private readonly string _couchpotatoUrl;
         private readonly IAuthorizationManager _authorizationManager;
 
-        public CouchPotatoService(IAuthorizationManager authorizationManager1)
+        public CouchPotatoService(IAuthorizationManager authorizationManager)
         {
             _couchpotatoApiKey = ConfigurationManager.AppSettings["couchpotato_apikey"];
             _couchpotatoUrl = ConfigurationManager.AppSettings["couchpotato_url"];
             _userAllowedMovieIds = new Dictionary<string, List<string>>();
             Priority = 1;
-            _authorizationManager = authorizationManager1;
+            _authorizationManager = authorizationManager;
         }
 
         public int Priority { get; private set; }
@@ -36,13 +37,18 @@ namespace skypebot.Services.couchpotato
 
         public void HandleCommand(string fromHandle, string fromDisplayName, string command, string parameters)
         {
-            if (!_authorizationManager.HasPermission(fromHandle, this.GetType().Name.ToLower())) return;
+            var minimumCapLength = Math.Min(parameters.Length, 150);
+            parameters = parameters.Substring(0, minimumCapLength);
+            var hasPermission = _authorizationManager.HasPermission(fromHandle, this.GetType().Name.ToLower());
+            if (!hasPermission) return;
+            if (string.IsNullOrWhiteSpace(parameters)) return;
             switch (command)
             {
-                case "addmovie":
+                case "!addmovie":
                     TryAddMovie(fromHandle, fromDisplayName, parameters.Split(' ')[0]);
                     break;
-                case "getmovie":
+                case "!getmovie":
+                    TrySearchMovie(fromHandle, fromDisplayName, parameters);
                     break;
                 default:
                     return;
@@ -50,22 +56,24 @@ namespace skypebot.Services.couchpotato
             }
         }
 
+        private async void TrySearchMovie(string fromHandle, string fromDisplayName, string parameters)
+        {
+            await Task.Run(() => SearchMovie(fromHandle, fromDisplayName, parameters));
+        }
+
         private async void TryAddMovie(string fromHandle, string fromDisplayName, string movie)
         {
             
-            var movieId = movie.Substring(0, 100).Trim(' ').ToLower();
+            var movieId = movie.ToLower();
 
             if (movieId.StartsWith("tt"))
             {
                 await Task.Run(() => AddMovie(fromHandle, fromDisplayName, movieId));
             }
-            else
-            {
-                await Task.Run(() => SearchMovie(fromDisplayName,fromHandle, movie));
-            }
+
         }
 
-        private async void SearchMovie(string fromDisplayName,string fromHandle, string movie)
+        private async void SearchMovie(string fromHandle,string fromDisplayName, string movie)
         {
             using (var httpClient = new HttpClient())
             {
@@ -78,11 +86,17 @@ namespace skypebot.Services.couchpotato
                     await
                         httpClient.GetStringAsync($"{_couchpotatoUrl}{_couchpotatoApiKey}{command}q={movie}&type=movie");
                 var content = JsonConvert.DeserializeObject<MoviesModel>(res, jsonSerializerSettings);
-                if (content.Movies == null) return;
-                _userAllowedMovieIds[fromHandle] = new List<string>(content.Movies.Select(x => x.imdb).ToList());
+                if (content.Movies == null)
+                {
+                    ChatBot.EnqueueMessage($"Could not find movie {movie} :(");
+                    return;
+                };
+                //Cap movies
+                var cappedMovies = content.Movies.OrderByDescending(x => x.year).Take(4).ToList();
+                _userAllowedMovieIds[fromHandle] = new List<string>(cappedMovies.Select(x => x.imdb).ToList());
                 ChatBot.EnqueueMessage(
                     $"{fromDisplayName}: Found the following movies, please add one using \"!addmovie tt0000000\" from imdb-id below\n" +
-                    $"{string.Join("\n", content.Movies.Select(x => $"Title: {x.original_title} ImdbId: {x.imdb} Year: {x.year} ImdbUrl: {x.ImdbUrl}").ToList())}");
+                    $"{string.Join("\n", cappedMovies.Select(x => $"ImdbId: {x.imdb} Title: {x.original_title} Year: {x.year} ImdbUrl: {x.ImdbUrl}").ToList())}");
             }
         }
 
@@ -91,7 +105,7 @@ namespace skypebot.Services.couchpotato
 
             if (!Regex.IsMatch(movieIdentifier, @"tt\d{7}")) return;
             if (!_userAllowedMovieIds[fromHandle].Contains(movieIdentifier)) return;
-            using (HttpClient httpClient = new HttpClient())
+            using (var httpClient = new HttpClient())
             {
                 const string command = "/movie.add?";
 
@@ -99,7 +113,7 @@ namespace skypebot.Services.couchpotato
                     httpClient.GetStringAsync(
                         $"{_couchpotatoUrl}{_couchpotatoApiKey}{command}identifier={movieIdentifier}&profile_id={quality}");
                 dynamic content = JsonConvert.DeserializeObject<dynamic>(res);
-                if (content.success)
+                if ((bool)content["success"])
                 {
 
                     ChatBot.EnqueueMessage($"{fromDisplayName}: Your movie was successfully added!");

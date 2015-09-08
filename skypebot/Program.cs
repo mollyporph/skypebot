@@ -49,6 +49,7 @@ namespace skypebot
             chatBot.JoinChat(@"#jonar90/$nattregnet;f00327a27dd370f5");
             _timer = new Timer(2000);
             _timer.Elapsed += _timer_Elapsed;
+            _timer.Start();
         }
 
         private void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)

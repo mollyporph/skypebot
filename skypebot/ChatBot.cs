@@ -37,11 +37,16 @@ namespace skypebot
             var commandWords = command.Split(' ').ToList();
             var actualCommand = commandWords[0];
             if (actualCommand == null) throw new ArgumentNullException(nameof(actualCommand));
-            var parameters = string.Join(" ", commandWords.Remove(actualCommand));
+            commandWords.Remove(actualCommand);
+            //Consistency?
+            var parameters = string.Join(" ", commandWords);
+
+            //Fugly cleanup 
+            //@microsoft : Don't stuff boolean.tostring when its not expected.......
             Task.Run(
                 () =>
                     _services.OrderBy(x => x.Priority)?
-                        .FirstOrDefault(x => x.CanHandleCommand(command))?
+                        .FirstOrDefault(x => x.CanHandleCommand(actualCommand))?
                         .HandleCommand(msg.FromHandle, msg.FromDisplayName, actualCommand, parameters));
         }
 
@@ -57,11 +62,11 @@ namespace skypebot
             string currentMessage;
             var success = Messages.TryTake(out currentMessage);
             if (!success) return;
-#if DEBUG
-            Debug.WriteLine(currentMessage);
-#else
+
+            //Debug.WriteLine(currentMessage);
+
             chat.SendMessage(currentMessage);
-#endif
+
 
 
         }

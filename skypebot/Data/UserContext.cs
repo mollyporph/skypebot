@@ -1,10 +1,13 @@
-﻿using System.Data.Entity;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
 using skypebot.model;
 
 namespace skypebot.Data
 {
-    public class UserContext : DbContext 
+    public class UserContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
+        //public DbSet<User> Users { get; set; }
+
     }
+
 }

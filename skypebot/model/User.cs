@@ -7,7 +7,7 @@ namespace skypebot.model
     {
         [Key]
         public string Handle { get; set; }
-        public virtual ICollection<Permission> Permissions { get; set; } 
+        public ICollection<Permission> Permissions { get; set; } 
     }
 
     public class Permission
