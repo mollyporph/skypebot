@@ -8,6 +8,8 @@ namespace skypebot.Data
     {
         public DbSet<User> Users { get; set; }
 
+        public DbSet<Permission> Permissions { get; set; } 
+
     }
 
 }

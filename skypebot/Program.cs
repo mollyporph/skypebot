@@ -21,8 +21,8 @@ namespace skypebot
         private NotifyIcon trayIcon;
         private ContextMenu trayMenu;
         private static Skype skype;
-        private ChatBot chatBot;
         private Timer _timer;
+        private IChatBot _chatBot;
 
         public SysTrayApp()
         {
@@ -39,14 +39,14 @@ namespace skypebot
         {
             skype = new Skype();
             skype.Attach();
-            skype.MessageStatus += chatBot.ProcessCommand;
+            skype.MessageStatus += _chatBot.ProcessCommand;
         }
 
         private void InitializeChatBotModule()
         {
             IKernel kernel = new StandardKernel(new ChatBotModule());
-            chatBot = kernel.Get<ChatBot>();
-            chatBot.JoinChat(@"#jonar90/$nattregnet;f00327a27dd370f5");
+            _chatBot = kernel.Get<IChatBot>();
+            _chatBot.JoinChat(@"#jonar90/$nattregnet;f00327a27dd370f5");
             _timer = new Timer(2000);
             _timer.Elapsed += _timer_Elapsed;
             _timer.Start();
@@ -54,7 +54,7 @@ namespace skypebot
 
         private void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            chatBot.PrintMessages(skype.Chat[@"#jonar90/$nattregnet;f00327a27dd370f5"]);
+            _chatBot.PrintMessages(skype.Chat[@"#jonar90/$nattregnet;f00327a27dd370f5"]);
         }
 
         private void InitializeTrayApp()

@@ -19,14 +19,16 @@ namespace skypebot.Services.couchpotato
         private readonly string _couchpotatoApiKey;
         private readonly string _couchpotatoUrl;
         private readonly IAuthorizationManager _authorizationManager;
+        private readonly IChatBot _chatBot;
 
-        public CouchPotatoService(IAuthorizationManager authorizationManager)
+        public CouchPotatoService(IAuthorizationManager authorizationManager,IChatBot chatBot)
         {
             _couchpotatoApiKey = ConfigurationManager.AppSettings["couchpotato_apikey"];
             _couchpotatoUrl = ConfigurationManager.AppSettings["couchpotato_url"];
             _userAllowedMovieIds = new Dictionary<string, List<string>>();
             Priority = 1;
             _authorizationManager = authorizationManager;
+            _chatBot = chatBot;
         }
 
         public int Priority { get; private set; }
@@ -88,13 +90,16 @@ namespace skypebot.Services.couchpotato
                 var content = JsonConvert.DeserializeObject<MoviesModel>(res, jsonSerializerSettings);
                 if (content.Movies == null)
                 {
-                    ChatBot.EnqueueMessage($"Could not find movie {movie} :(");
+
+                    _chatBot.EnqueueMessage($"Could not find movie {movie} :(");
+
                     return;
                 };
                 //Cap movies
                 var cappedMovies = content.Movies.OrderByDescending(x => x.year).Take(4).ToList();
                 _userAllowedMovieIds[fromHandle] = new List<string>(cappedMovies.Select(x => x.imdb).ToList());
-                ChatBot.EnqueueMessage(
+
+                _chatBot.EnqueueMessage(
                     $"{fromDisplayName}: Found the following movies, please add one using \"!addmovie tt0000000\" from imdb-id below\n" +
                     $"{string.Join("\n", cappedMovies.Select(x => $"ImdbId: {x.imdb} Title: {x.original_title} Year: {x.year} ImdbUrl: {x.ImdbUrl}").ToList())}");
             }
@@ -116,7 +121,7 @@ namespace skypebot.Services.couchpotato
                 if ((bool)content["success"])
                 {
 
-                    ChatBot.EnqueueMessage($"{fromDisplayName}: Your movie was successfully added!");
+                    _chatBot.EnqueueMessage($"{fromDisplayName}: Your movie was successfully added!");
                 }
             }
         }
