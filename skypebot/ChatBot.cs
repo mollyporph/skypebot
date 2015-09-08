@@ -4,43 +4,58 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Ninject;
 using skypebot.Services;
 using SKYPE4COMLib;
 
 namespace skypebot
+
 {
-    public class ChatBot : IChatBot
+
+    //Unstatic all the things
+    public class ChatBot
     {
-        private static ConcurrentBag<string> _messages;
-        private IEnumerable<IChatBotService> services; 
-        public void RegisterService(IChatBotService service)
+        private static readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
+        private IEnumerable<IChatBotService> Services;
+        private static readonly List<string> Chats = new List<string>();
+
+
+
+        public ChatBot()
         {
-            throw new NotImplementedException();
+
+        }
+        [Inject]
+        public void RegisterServices(IChatBotService[] services)
+        {
+            Services = services;
         }
 
-        public void ProcessCommand(ChatMessage msg,string command)
+        public void ProcessCommand(ChatMessage msg)
         {
+            if (!Chats.Contains(msg.ChatName)) return;
+            var command = msg.Body;
             var commandWords = command.Split(' ').ToList();
             var actualCommand = commandWords[0];
             if (actualCommand == null) throw new ArgumentNullException(nameof(actualCommand));
-            var parameters = string.Join(" ",commandWords.Remove(actualCommand));
+            var parameters = string.Join(" ", commandWords.Remove(actualCommand));
             Task.Run(
                 () =>
-                    services.OrderBy(x => x.Priority)?
+                    Services.OrderBy(x => x.Priority)?
                         .FirstOrDefault(x => x.CanHandleCommand(command))?
-                        .HandleCommand(msg.FromHandle,msg.FromDisplayName, actualCommand, parameters));
+                        .HandleCommand(msg.FromHandle, msg.FromDisplayName, actualCommand, parameters));
         }
 
         public void JoinChat(string chatname)
         {
-            throw new NotImplementedException();
+            Chats.Add(chatname);
         }
 
-        public void PrintMessages(Chat chat)
+        public  void PrintMessages(Chat chat)
         {
 
             string currentMessage;
-            var success = _messages.TryTake(out currentMessage);
+            var success = Messages.TryTake(out currentMessage);
             if (!success) return;
 #if DEBUG
             Debug.WriteLine(currentMessage);
@@ -51,9 +66,10 @@ namespace skypebot
 
         }
 
-        public static  void EnqueueMessage(string message)
+        public static void EnqueueMessage(string message)
         {
-            _messages.Add(message);
+            Messages.Add(message);
         }
+        
     }
 }

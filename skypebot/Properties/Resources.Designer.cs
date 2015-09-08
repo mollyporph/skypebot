@@ -59,5 +59,32 @@ namespace skypebot.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mambot is running minimized!.
+        /// </summary>
+        internal static string SysTrayApp_SysTrayApp_Mambot_is_running_minimized_ {
+            get {
+                return ResourceManager.GetString("SysTrayApp_SysTrayApp_Mambot_is_running_minimized_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remember to accept the app in skype! :).
+        /// </summary>
+        internal static string SysTrayApp_SysTrayApp_Remember_to_accept_the_app_in_skype____ {
+            get {
+                return ResourceManager.GetString("SysTrayApp_SysTrayApp_Remember_to_accept_the_app_in_skype____", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skype Mambot.
+        /// </summary>
+        internal static string SysTrayApp_SysTrayApp_Skype_Mambot {
+            get {
+                return ResourceManager.GetString("SysTrayApp_SysTrayApp_Skype_Mambot", resourceCulture);
+            }
+        }
     }
 }

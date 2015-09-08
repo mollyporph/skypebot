@@ -3,18 +3,17 @@ using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
-using repostpolice;
-using repostpolice.Utility;
 using skypebot.Services.couchpotato.model;
-using SKYPE4COMLib;
+using skypebot.Utility;
 
 namespace skypebot.Services.couchpotato
 {
     public class CouchPotatoService : IChatBotService
     {
-        private readonly Dictionary<string, IEnumerable<string>> _userAllowedMovieIds;
-        public string[] Commands { get; } = { "addmovie", "getmovie" };
+        private readonly Dictionary<string, List<string>> _userAllowedMovieIds;
+        public string[] Commands { get; } = { "!addmovie", "!getmovie" };
         private const string BestQuality = "6a1d1912dc7a48c6819ac95053892932";
         private readonly string _couchpotatoApiKey;
         private readonly string _couchpotatoUrl;
@@ -24,9 +23,10 @@ namespace skypebot.Services.couchpotato
         {
             _couchpotatoApiKey = ConfigurationManager.AppSettings["couchpotato_apikey"];
             _couchpotatoUrl = ConfigurationManager.AppSettings["couchpotato_url"];
+            _userAllowedMovieIds = new Dictionary<string, List<string>>();
             Priority = priority;
             _authorizationManager = authorizationManager1;
-            _userAllowedMovieIds = new Dictionary<string, IEnumerable<string>>();
+            ChatBot.RegisterService(this);
         }
 
         public int Priority { get; private set; }
@@ -51,27 +51,24 @@ namespace skypebot.Services.couchpotato
             }
         }
 
-        public void HandleCommand(ChatMessage msg, string command, string parameters)
-        {
-
-        }
-
         private async void TryAddMovie(string fromHandle, string fromDisplayName, string movie)
         {
-            var movieId = movie.Substring(0, 100);
+            
+            var movieId = movie.Substring(0, 100).Trim(' ').ToLower();
+
             if (movieId.StartsWith("tt"))
             {
-                AddMovie(fromHandle, fromDisplayName, movieId);
+                await Task.Run(() => AddMovie(fromHandle, fromDisplayName, movieId));
             }
             else
             {
-                SearchMovie(fromDisplayName, movie);
+                await Task.Run(() => SearchMovie(fromDisplayName,fromHandle, movie));
             }
         }
 
-        private async void SearchMovie(string fromDisplayName, string movie)
+        private async void SearchMovie(string fromDisplayName,string fromHandle, string movie)
         {
-            using (HttpClient httpClient = new HttpClient())
+            using (var httpClient = new HttpClient())
             {
                 var jsonSerializerSettings = new JsonSerializerSettings
                 {
@@ -81,18 +78,12 @@ namespace skypebot.Services.couchpotato
                 var res =
                     await
                         httpClient.GetStringAsync($"{_couchpotatoUrl}{_couchpotatoApiKey}{command}q={movie}&type=movie");
-                var content = Newtonsoft.Json.JsonConvert.DeserializeObject<MoviesModel>(res);
-                if (content.Movies != null)
-                {
-                    ChatBot.EnqueueMessage(
-                   $"{fromDisplayName}: Found the following movies, please add one using \"!addmovie tt0000000\" from imdb-id below\n" +
-                   $"{string.Join("\n", content.Movies.Select(x => $"Title: {x.original_title} ImdbId: {x.imdb} Year: {x.year} ImdbUrl: {x.ImdbUrl}").ToList())}");
-                }
-                var movies = new List<Movie>();
-
-
-
-
+                var content = JsonConvert.DeserializeObject<MoviesModel>(res, jsonSerializerSettings);
+                if (content.Movies == null) return;
+                _userAllowedMovieIds[fromHandle] = new List<string>(content.Movies.Select(x => x.imdb).ToList());
+                ChatBot.EnqueueMessage(
+                    $"{fromDisplayName}: Found the following movies, please add one using \"!addmovie tt0000000\" from imdb-id below\n" +
+                    $"{string.Join("\n", content.Movies.Select(x => $"Title: {x.original_title} ImdbId: {x.imdb} Year: {x.year} ImdbUrl: {x.ImdbUrl}").ToList())}");
             }
         }
 
@@ -108,7 +99,7 @@ namespace skypebot.Services.couchpotato
                 var res = await
                     httpClient.GetStringAsync(
                         $"{_couchpotatoUrl}{_couchpotatoApiKey}{command}identifier={movieIdentifier}&profile_id={quality}");
-                dynamic content = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(res);
+                dynamic content = JsonConvert.DeserializeObject<dynamic>(res);
                 if (content.success)
                 {
 

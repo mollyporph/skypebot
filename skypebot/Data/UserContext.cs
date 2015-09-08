@@ -1,5 +1,5 @@
 ﻿using System.Data.Entity;
-using repostpolice.model;
+using skypebot.model;
 
 namespace skypebot.Data
 {
