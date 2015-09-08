@@ -2,6 +2,7 @@
 using skypebot.Services;
 using skypebot.Services.couchpotato;
 using skypebot.Services.repostpolice;
+using skypebot.Utility;
 
 namespace skypebot
 {
@@ -11,6 +12,7 @@ namespace skypebot
         {
             Bind<IChatBotService>().To<CouchPotatoService>();
             Bind<IChatBotService>().To<RepostPoliceService>();
+            Bind<IAuthorizationManager>().To<AuthorizationManager>();
         }
     }
 }

@@ -13,26 +13,25 @@ namespace skypebot
 {
 
     //Unstatic all the things
-    public class ChatBot
+    public class ChatBot : IChatBot
     {
         private static readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
-        private IEnumerable<IChatBotService> Services;
+        private readonly IEnumerable<IChatBotService> _services;
         private static readonly List<string> Chats = new List<string>();
 
-
-
-        public ChatBot()
+        public ChatBot(IChatBotService[] services)
         {
-
+            _services = services;
         }
-        [Inject]
-        public void RegisterServices(IChatBotService[] services)
-        {
-            Services = services;
-        }
+      
 
-        public void ProcessCommand(ChatMessage msg)
+        public void ProcessCommand(ChatMessage msg, TChatMessageStatus status)
         {
+            if (TChatMessageStatus.cmsRead == status || TChatMessageStatus.cmsSending == status)
+            {
+                return;
+            }
+
             if (!Chats.Contains(msg.ChatName)) return;
             var command = msg.Body;
             var commandWords = command.Split(' ').ToList();
@@ -41,17 +40,18 @@ namespace skypebot
             var parameters = string.Join(" ", commandWords.Remove(actualCommand));
             Task.Run(
                 () =>
-                    Services.OrderBy(x => x.Priority)?
+                    _services.OrderBy(x => x.Priority)?
                         .FirstOrDefault(x => x.CanHandleCommand(command))?
                         .HandleCommand(msg.FromHandle, msg.FromDisplayName, actualCommand, parameters));
         }
+
 
         public void JoinChat(string chatname)
         {
             Chats.Add(chatname);
         }
 
-        public  void PrintMessages(Chat chat)
+        public void PrintMessages(Chat chat)
         {
 
             string currentMessage;

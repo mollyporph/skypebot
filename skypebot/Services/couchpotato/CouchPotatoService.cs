@@ -19,14 +19,13 @@ namespace skypebot.Services.couchpotato
         private readonly string _couchpotatoUrl;
         private readonly IAuthorizationManager _authorizationManager;
 
-        public CouchPotatoService(int priority, IAuthorizationManager authorizationManager1)
+        public CouchPotatoService(IAuthorizationManager authorizationManager1)
         {
             _couchpotatoApiKey = ConfigurationManager.AppSettings["couchpotato_apikey"];
             _couchpotatoUrl = ConfigurationManager.AppSettings["couchpotato_url"];
             _userAllowedMovieIds = new Dictionary<string, List<string>>();
-            Priority = priority;
+            Priority = 1;
             _authorizationManager = authorizationManager1;
-            ChatBot.RegisterService(this);
         }
 
         public int Priority { get; private set; }
