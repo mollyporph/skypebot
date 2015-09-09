@@ -1,4 +1,8 @@
 ﻿using Ninject.Modules;
+using skypebot.Services;
+using skypebot.Services.couchpotato;
+using skypebot.Services.repostpolice;
+using skypebot.Utility;
 
 namespace skypebot
 {
@@ -6,7 +10,9 @@ namespace skypebot
     {
         public override void Load()
         {
-            throw new System.NotImplementedException();
+            Bind<IChatBotService>().To<CouchPotatoService>();
+            Bind<IChatBotService>().To<RepostPoliceService>();
+            Bind<IAuthorizationManager>().To<AuthorizationManager>();
         }
     }
 }

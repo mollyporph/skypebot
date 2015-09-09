@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using Newtonsoft.Json;
-using skypebot.Services.repostpolice.model;
+using Ninject;
+using skypebot.Properties;
 using SKYPE4COMLib;
 using Application = System.Windows.Forms.Application;
 using Timer = System.Timers.Timer;
@@ -24,106 +20,61 @@ namespace skypebot
         }
         private NotifyIcon trayIcon;
         private ContextMenu trayMenu;
-        private static Timer timer;
         private static Skype skype;
-        private Regex urlRegex = new Regex(@"((https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?)(?:\s)?", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        private static List<UrlHistoryItem> _urlHistory;
-        private static Queue<string> Insults = new Queue<string>();
+        private ChatBot chatBot;
+        private Timer _timer;
 
         public SysTrayApp()
         {
-            _urlHistory = new List<UrlHistoryItem>();
-            trayMenu = new ContextMenu();
-            trayMenu.MenuItems.Add("Exit", OnExit);
-            trayIcon = new NotifyIcon();
-            trayIcon.Text = "Skype Mambot";
-            trayIcon.Icon = new Icon("skypednd.ico", 40, 40);
-            trayIcon.BalloonTipTitle =
-                "Mambot is running minimized!";
-            trayIcon.BalloonTipText = "Remember to accept the app in skype! :)";
-            trayIcon.BalloonTipIcon = ToolTipIcon.Info;
+            InitializeTrayApp();
 
-            trayIcon.ContextMenu = trayMenu;
-            trayIcon.Visible = true;
-            trayIcon.ShowBalloonTip(3000);
+            InitializeChatBotModule();
+
+            InitializeSkypeHook();
+
+
+        }
+
+        private void InitializeSkypeHook()
+        {
             skype = new Skype();
             skype.Attach();
-            DoCleanUpAndRefill();
-            timer = new Timer(60000);
-            timer.Elapsed += (sender, eventArgs) => DoCleanUpAndRefill();
-            timer.Enabled = true;
-
-            skype.MessageStatus += new _ISkypeEvents_MessageStatusEventHandler(skype_MessageStatus);
+            skype.MessageStatus += chatBot.ProcessCommand;
         }
-        private void skype_MessageStatus(ChatMessage msg, TChatMessageStatus status)
+
+        private void InitializeChatBotModule()
         {
-            if (TChatMessageStatus.cmsRead == status)
-            {
-                return;
-            }
-            var results = urlRegex.Matches(msg.Body);
-            if(msg.Body.Contains("\r\n\r\n<<<"))
-            {
-                return;
-            }
-            foreach (var res in results)
-            {
-                var truncRgx = new Regex(@"(\s.*)*");
-                var trunctedRes = truncRgx.Replace(res.ToString(), "");
-                Uri uriResult;
-                if (!Uri.TryCreate(res.ToString(), UriKind.Absolute, out uriResult) ||
-                    uriResult.Scheme != Uri.UriSchemeHttp)
-                    continue;
-                if (_urlHistory.Any(x => uriResult == x.Url))
-                {
-                    WarnOfRepost(msg, _urlHistory.FirstOrDefault(x => uriResult == x.Url));
-                }
-                else
-                {
-                    SavePost(uriResult, msg.FromDisplayName);
-                }
-            }
-
+            IKernel kernel = new StandardKernel(new ChatBotModule());
+            chatBot = kernel.Get<ChatBot>();
+            chatBot.JoinChat(@"#jonar90/$nattregnet;f00327a27dd370f5");
+            _timer = new Timer(2000);
+            _timer.Elapsed += _timer_Elapsed;
+            _timer.Start();
         }
 
-        private void SavePost(Uri uriResult, string fromDisplayName)
+        private void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            _urlHistory.Add(new UrlHistoryItem
-            {
-                PostedAt = DateTime.Now,
-                Url = uriResult,
-                User = fromDisplayName
-            });
+            chatBot.PrintMessages(skype.Chat[@"#jonar90/$nattregnet;f00327a27dd370f5"]);
         }
 
-        private void WarnOfRepost(ChatMessage msg, UrlHistoryItem item)
+        private void InitializeTrayApp()
         {
-
-            msg.Chat.SendMessage(
-                $"{msg.FromDisplayName}: That link is a repost from {item.User} at {item.PostedAt}, {Insults.Dequeue()}");
-        }
-
-
-        private static void DoCleanUpAndRefill()
-        {
-            if (Insults.Count < 5)
+            trayMenu = new ContextMenu();
+            trayMenu.MenuItems.Add("Exit", OnExit);
+            trayIcon = new NotifyIcon
             {
-                DownLoadMoreInsults();
-            }
-            _urlHistory.RemoveAll(x => x.PostedAt < DateTime.Now.AddHours(-6));
+                Text = Resources.SysTrayApp_SysTrayApp_Skype_Mambot,
+                Icon = new Icon("skypednd.ico", 40, 40),
+                BalloonTipTitle = Resources.SysTrayApp_SysTrayApp_Mambot_is_running_minimized_,
+                BalloonTipText = Resources.SysTrayApp_SysTrayApp_Remember_to_accept_the_app_in_skype____,
+                BalloonTipIcon = ToolTipIcon.Info,
+                ContextMenu = trayMenu,
+                Visible = true
+            };
+
+            trayIcon.ShowBalloonTip(3000);
         }
 
-        private static void DownLoadMoreInsults()
-        {
-            for (var i = 0; i < 20; i++)
-            {
-                using (var wc = new WebClient())
-                {
-                    var content = JsonConvert.DeserializeObject<Insult>(wc.DownloadString("Http://quandyfactory.com/insult/json"));
-                    Insults.Enqueue(content.insult);
-                }
-            }
-        }
 
         protected override void OnLoad(EventArgs e)
         {
