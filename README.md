@@ -2,7 +2,7 @@
 community automation through skype
 
 Development build:
-![alt travis-dev](https://travis-ci.org/mollyporph/skypebot.svg?branch=development)
+![alt travis-dev](https://ci.appveyor.com/project/mollyporph/skypebot/branch/development)
 
 Production build:
-![alt travis-prod](https://travis-ci.org/mollyporph/skypebot.svg?branch=master)
+![alt travis-prod](https://ci.appveyor.com/project/mollyporph/skypebot/branch/master)
