@@ -8,6 +8,7 @@ namespace skypebot.Services.authorization
 {
     public class AuthorizationService : IChatBotService
     {
+        private string[] _commands = new[] { "!addpermission", "!removepermission", "!getpermission" };
         public int Priority
         {
             get
@@ -18,12 +19,16 @@ namespace skypebot.Services.authorization
 
         public bool CanHandleCommand(string command)
         {
-            throw new NotImplementedException();
+            return _commands.Contains(command);
         }
 
         public void HandleCommand(string fromHandle, string fromDisplayName, string command, string parameters)
         {
-            throw new NotImplementedException();
+            var _param = parameters.Split(' ');
+            var _user = _param[0];
+            var _priviledge = _param[1];
+
+
         }
     }
 }
