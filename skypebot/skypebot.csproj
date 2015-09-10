@@ -77,6 +77,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="model\User.cs" />
+    <Compile Include="Services\authorization\AuthorizationService.cs" />
     <Compile Include="Services\couchpotato\CouchPotatoService.cs" />
     <Compile Include="IChatBot.cs" />
     <Compile Include="Services\couchpotato\model\Movie.cs" />
@@ -128,7 +129,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Services\authorization\model\" />
+  </ItemGroup>
   <ItemGroup>
     <COMReference Include="SKYPE4COMLib">
       <Guid>{03282B5D-B38F-469D-849A-09B0A7F4881B}</Guid>
