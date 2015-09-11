@@ -75,6 +75,14 @@
     <Compile Include="Migrations\201509072049113_addedPermission.Designer.cs">
       <DependentUpon>201509072049113_addedPermission.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509112236448__something.cs" />
+    <Compile Include="Migrations\201509112236448__something.Designer.cs">
+      <DependentUpon>201509112236448__something.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201509112245417_m-m_migration.cs" />
+    <Compile Include="Migrations\201509112245417_m-m_migration.Designer.cs">
+      <DependentUpon>201509112245417_m-m_migration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="model\User.cs" />
     <Compile Include="Services\authorization\AuthorizationService.cs" />
@@ -96,6 +104,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509072049113_addedPermission.resx">
       <DependentUpon>201509072049113_addedPermission.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509112236448__something.resx">
+      <DependentUpon>201509112236448__something.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509112245417_m-m_migration.resx">
+      <DependentUpon>201509112245417_m-m_migration.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -15,7 +15,10 @@ namespace skypebot.model
     {
         [Key]
         public int Id { get; set; }
+
         public string Uri { get; set; }
+
+        public ICollection<User> Users { get; set; }
     }
 
     public static class Extensions

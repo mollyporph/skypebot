@@ -16,13 +16,14 @@ namespace skypebot
     public class ChatBot : IChatBot
     {
         private static readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
-        private readonly IEnumerable<IChatBotService> _services;
         private static readonly List<string> Chats = new List<string>();
 
-        public ChatBot(IChatBotService[] services)
+        [Inject]
+        public IEnumerable<IChatBotService> _services { private get; set; } 
+        public ChatBot()
         {
-            _services = services;
         }
+
       
 
         public void ProcessCommand(ChatMessage msg, TChatMessageStatus status)
@@ -45,7 +46,7 @@ namespace skypebot
             //@microsoft : Don't stuff boolean.tostring when its not expected.......
             Task.Run(
                 () =>
-                    _services.OrderBy(x => x.Priority)?
+                    _services
                         .FirstOrDefault(x => x.CanHandleCommand(actualCommand))?
                         .HandleCommand(msg.FromHandle, msg.FromDisplayName, actualCommand, parameters));
         }

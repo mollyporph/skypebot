@@ -26,12 +26,10 @@ namespace skypebot.Services.couchpotato
             _couchpotatoApiKey = ConfigurationManager.AppSettings["couchpotato_apikey"];
             _couchpotatoUrl = ConfigurationManager.AppSettings["couchpotato_url"];
             _userAllowedMovieIds = new Dictionary<string, List<string>>();
-            Priority = 1;
             _authorizationManager = authorizationManager;
             _chatBot = chatBot;
         }
 
-        public int Priority { get; private set; }
         public bool CanHandleCommand(string command)
         {
             return Commands.Contains(command);

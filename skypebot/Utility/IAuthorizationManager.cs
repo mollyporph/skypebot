@@ -11,8 +11,8 @@ namespace skypebot.Utility
 {
     public interface IAuthorizationManager
     {
-        void AddPermission(string handle, string permission);
-        void RemovePermission(string handle, string permission);
+        bool AddPermission(string handle, string permission);
+        bool RemovePermission(string handle, string permission);
         IEnumerable<string> GetPermissions(string handle);
         bool HasPermission(string handle, string permission);
     }
@@ -23,58 +23,21 @@ namespace skypebot.Utility
         public AuthorizationManager()
         {
 
-            RecreatePermissionTable();
-            RecreateAdminUserIfMissing();
             
         }
 
-        private static void RecreateAdminUserIfMissing()
-        {
-            using (var ctx = new UserContext())
-            {
-                if (ctx.Users.FirstOrDefault(x => x.Handle == "nattregnet") != null) return;
-                var adminUser = new User()
-                {
-                    Handle = "nattregnet",
-                    Permissions = new List<Permission>()
-                };
+       
 
-                var permissions = ctx.Permissions.ToList();
-                adminUser.Permissions = permissions;
-                ctx.Users.Add(adminUser);
-            }
-        }
-
-        private static void RecreatePermissionTable()
-        {
-
-            //Reflection : Get all coherent types from IChatBotService and add them as permission-objects in db
-            var type = typeof(IChatBotService);
-            var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface).Select(x => x.Name.ToLower()).ToList();
-
-
-            using (var ctx = new UserContext())
-            {
-                var objCtx = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)ctx).ObjectContext;
-                objCtx.ExecuteStoreCommand("TRUNCATE TABLE [Permissions]");
-
-                serviceTypes.ForEach(x => ctx.Permissions.Add(new Permission() {Uri = x}));
-                ctx.SaveChanges();
-            }
-
-        }
-
-        public void RemovePermission(string handle, string permission)
+        public bool RemovePermission(string handle, string permission)
         {
             using (var ctx = new UserContext())
             {
                 var user = ctx.Users.FirstOrDefault(x => x.Handle == handle);
-                if (user == null) return;
-                if (!user.Permissions.ToPermissionStrings().Contains(permission)) return;
+                if (user == null) return false;
+                if (!user.Permissions.ToPermissionStrings().Contains(permission)) return false;
                 user.Permissions.Remove(user.Permissions.FirstOrDefault(x => x.Uri == permission));
                 ctx.SaveChanges();
+                return true;
             }
         }
 
@@ -91,23 +54,37 @@ namespace skypebot.Utility
         {
             using (var ctx = new UserContext())
             {
-                var firstOrDefault = ctx.Users.FirstOrDefault(user => user.Handle == handle);
+                var firstOrDefault = ctx.Users.Include("Permissions").FirstOrDefault(user => user.Handle == handle);
                 return
                     firstOrDefault != null && firstOrDefault
                         .Permissions.Select(p => p.Uri)
-                        .Contains(permission);
+                        .Contains(permission.ToLower());
             }
         }
 
-        public void AddPermission(string handle, string permission)
+        public bool AddPermission(string handle, string permission)
         {
             using (var ctx = new UserContext())
             {
                 var user = ctx.Users.FirstOrDefault(x => x.Handle == handle);
-                if (user == null) return;
-                if (user.Permissions.ToPermissionStrings().Contains(permission)) return;
-                user.Permissions.Add(new Permission {Uri = permission});
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        Handle = handle,
+                        Permissions = ctx.Permissions.Where(x => x.Uri == permission).ToList()
+                    };
+                    ctx.Users.Add(user);
+                }
+                else
+                {
+                    //User already has permission
+                    if (user.Permissions.ToPermissionStrings().Contains(permission)) return false;
+                    user.Permissions.Add(new Permission { Uri = permission });
+                }
+                
                 ctx.SaveChanges();
+                return true;
             }
         }
     }
