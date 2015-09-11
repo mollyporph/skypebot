@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace skypebot.model
 {
@@ -14,6 +15,22 @@ namespace skypebot.model
     {
         [Key]
         public int Id { get; set; }
+
         public string Uri { get; set; }
+
+        public ICollection<User> Users { get; set; }
+    }
+
+    public static class Extensions
+    {
+        public static string ToPermissionString(this Permission permission)
+        {
+            return permission.Uri;
+        }
+
+        public static IEnumerable<string> ToPermissionStrings(this IEnumerable<Permission> permissions)
+        {
+            return permissions.Select(x => x.ToPermissionString());
+        } 
     }
 }
