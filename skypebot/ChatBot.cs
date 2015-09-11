@@ -71,7 +71,7 @@ namespace skypebot
 
         }
 
-        public static void EnqueueMessage(string message)
+        public void EnqueueMessage(string message)
         {
             Messages.Add(message);
         }
