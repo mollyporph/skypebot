@@ -1,29 +1,23 @@
 ﻿using skypebot.Utility;
-using System;
-using System.Collections.Generic;
+
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace skypebot.Services.authorization
 {
     public class AuthorizationService : IChatBotService
     {
-        private IChatBot _chatBot;
-        private IAuthorizationManager _authorizationManager;
+
+        private readonly IChatBot _chatBot;
+        private readonly IAuthorizationManager _authorizationManager;
+
         public AuthorizationService(IChatBot chatBot, IAuthorizationManager authorizationManager)
         {
             _chatBot = chatBot;
             _authorizationManager = authorizationManager;
         }
-        private string[] _commands = new[] { "!addpermission", "!removepermission", "!getpermission" };
-        public int Priority
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+
+        private readonly string[] _commands = { "!addpermission", "!removepermission", "!getpermission" };
+
 
         public bool CanHandleCommand(string command)
         {
@@ -32,32 +26,44 @@ namespace skypebot.Services.authorization
 
         public void HandleCommand(string fromHandle, string fromDisplayName, string command, string parameters)
         {
-            if (!_authorizationManager.HasPermission(fromHandle, this.GetType().Name))return;
+
+            if (!_authorizationManager.HasPermission(fromHandle, this.GetType().Name)) return;
+            var param = parameters.Split(' ');
+            if (param.Count() > 2)
+            {
+                _chatBot.EnqueueMessage(
+                    $"{fromDisplayName}: Wrong parameters supplied. Correct usage is !<command> <user> <priviledge>");
+            }
+            var user = param[0];
+            var permission = param[1];
             switch (command)
             {
-                case "!addpermission":
-                    var _param = parameters.Split(' ');
-                    if (_param.Count() > 2)
-                    {
-                        _chatBot.EnqueueMessage($"{fromDisplayName}: Wrong parameters supplied. Correct usage is !<command> <user> <priviledge>");
-                    }
-                    var _user = _param[0];
-                    var _priviledge = _param[1];
-                    TrySetPermission(_user, _priviledge);
 
+                case "!addpermission":
+                    TrySetPermission(user, permission);
                     break;
                 case "!removepermission":
+                    RemovePermission(user, permission);
                     break;
-                case "!getpermission":
-                    break;
+                default:
+                    return;
             }
-
-
         }
 
-        private void TrySetPermission(string _user, string _priviledge)
+        private void TrySetPermission(string user, string permission)
         {
-            throw new NotImplementedException();
+            var message = _authorizationManager.AddPermission(user, permission)
+                ? "Successfully added the permission."
+                : "Failed to set the permission";
+            _chatBot.EnqueueMessage(message);
+        }
+
+        private void RemovePermission(string user, string permission)
+        {
+            var message = _authorizationManager.RemovePermission(user, permission)
+                ? "Successfully removed the permission"
+                : "Failed to set the permission";
+            _chatBot.EnqueueMessage(message);
         }
     }
 }
