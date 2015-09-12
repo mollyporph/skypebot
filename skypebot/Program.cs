@@ -34,9 +34,12 @@ namespace skypebot
         public SysTrayApp()
         {
             InitializeTrayApp();
-
+#if DEBUG
+#else
             RecreatePermissionTable();
             RecreateAdminUserIfMissing();
+#endif
+
 
             InitializeChatBotModule();
 
