@@ -107,6 +107,7 @@ namespace skypebot.Services.couchpotato
         {
 
             if (!Regex.IsMatch(movieIdentifier, @"tt\d{7}")) return;
+            if (!_userAllowedMovieIds.ContainsKey(fromHandle)) return;
             if (!_userAllowedMovieIds[fromHandle].Contains(movieIdentifier)) return;
             using (var httpClient = new HttpClient())
             {

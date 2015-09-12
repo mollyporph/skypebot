@@ -68,6 +68,7 @@ namespace skypebot
         private void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             _chatBot.PrintMessages(skype.Chat[@"#jonar90/$nattregnet;f00327a27dd370f5"]);
+            //_chatBot.PrintMessages(skype.Chat[@"#nattregnet/$live:mollyporph;c5f2c6d028f48edb"]);
         }
 
         private void InitializeTrayApp()
