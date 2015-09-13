@@ -16,11 +16,11 @@ namespace skypebot
             Bind<IChatBotService>().To<RepostPoliceService>().InSingletonScope();
             Bind<IChatBotService>().To<AuthorizationService>().InSingletonScope();
             Bind<IChatBotService>().To<SickbeardService>().InSingletonScope();
-#if DEBUG
-            Bind<IAuthorizationManager>().To<DummyAuthorizationManager>();
-#else
+//#if DEBUG
+            //Bind<IAuthorizationManager>().To<DummyAuthorizationManager>();
+//#else
             Bind<IAuthorizationManager>().To<AuthorizationManager>();
-#endif
+//#endif
             Bind<IChatBot>().To<ChatBot>().InSingletonScope();
            
  

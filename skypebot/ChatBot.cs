@@ -32,8 +32,10 @@ namespace skypebot
             {
                 return;
             }
-
+#if DEBUG
+#else
             if (!Chats.Contains(msg.ChatName)) return;
+#endif
             var command = msg.Body;
             var commandWords = command.Split(' ').ToList();
             var actualCommand = commandWords[0];
@@ -47,8 +49,8 @@ namespace skypebot
             Task.Run(
                 () =>
                     _services
-                        .FirstOrDefault(x => x.CanHandleCommand(actualCommand))?
-                        .HandleCommand(msg.FromHandle, msg.FromDisplayName, actualCommand, parameters));
+                        .Where(x => x.CanHandleCommand(actualCommand)).ToList().ForEach(x =>
+                        x.HandleCommand(msg.FromHandle, msg.FromDisplayName, actualCommand, parameters)));
         }
 
 

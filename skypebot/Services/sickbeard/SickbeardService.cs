@@ -59,7 +59,6 @@ namespace skypebot.Services.sickbeard
         {
             await Task.Run(() => AddSeries(fromHandle, fromDisplayName, parameters));
         }
-
         private async void SearchSeries(string fromHandle, string fromDisplayName, string parameters)
         {
 
@@ -68,7 +67,12 @@ namespace skypebot.Services.sickbeard
             {
                 var res = await httpClient.GetStringAsync(sickBeardUrl+sickBeardApiKey + Query);
                 var seriesResults = Newtonsoft.Json.JsonConvert.DeserializeObject<SickbeardModel>(res).data.results.OrderByDescending(x => x.first_aired).Take(4);
-                var sickbeardSeries = seriesResults as SickbeardSeries[] ?? seriesResults.ToArray();
+                var sickbeardSeries = seriesResults as SickbeardSeries[] ?? seriesResults.ToArray().Where(x => x.name != @"** 403: Series Not Permitted **");
+                if (!sickbeardSeries.Any())
+                {
+                    _chatBot.EnqueueMessage($"{fromDisplayName}: Couldn't find any series for \"{parameters}\"");
+                    return;
+                }
                 _userAllowedSeriesIds[fromHandle] = new List<string>(sickbeardSeries.Select(x => x.tvdbid).ToList());
 
                 _chatBot.EnqueueMessage($"{fromDisplayName}: found the following series," +
