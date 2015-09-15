@@ -1,5 +1,6 @@
 ﻿using skypebot.Services;
 using SKYPE4COMLib;
+using System;
 
 namespace skypebot
 {
@@ -9,6 +10,8 @@ namespace skypebot
         void JoinChat(string chatname);
         void PrintMessages(Chat chat);
         void EnqueueMessage(string message);
+        void RegisterGlobalClockHandler(Action handler);
+        void UnregisterGlobalClockHandler(Action handler);
 
     }
 }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Ninject;
 using skypebot.Services;
 using SKYPE4COMLib;
+using System.Timers;
 
 namespace skypebot
 
@@ -17,11 +18,18 @@ namespace skypebot
     {
         private static readonly ConcurrentBag<string> Messages = new ConcurrentBag<string>();
         private static readonly List<string> Chats = new List<string>();
+        private Timer _timer;
+        private List<Action> handlers;
 
         [Inject]
         public IEnumerable<IChatBotService> _services { private get; set; } 
         public ChatBot()
         {
+            _timer = new Timer(60000);
+            _timer.Elapsed += _timer_Elapsed;
+
+            _timer.Start();
+            handlers = new List<Action>();
         }
 
       
@@ -44,8 +52,6 @@ namespace skypebot
             //Consistency?
             var parameters = string.Join(" ", commandWords);
 
-            //Fugly cleanup 
-            //@microsoft : Don't stuff boolean.tostring when its not expected.......
             Task.Run(
                 () =>
                     _services
@@ -78,6 +84,20 @@ namespace skypebot
         {
             Messages.Add(message);
         }
-        
+
+        public void RegisterGlobalClockHandler(Action handler)
+        {
+            handlers.Add(handler);
+        }
+
+        private void _timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            handlers.AsParallel().ForAll(x => x()); 
+        }
+
+        public void UnregisterGlobalClockHandler(Action handler)
+        {
+            handlers.Remove(handler);
+        }
     }
 }
