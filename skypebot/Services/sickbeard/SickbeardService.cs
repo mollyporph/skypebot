@@ -89,7 +89,7 @@ namespace skypebot.Services.sickbeard
             //Must have searched for it beforehand
             if (!_userAllowedSeriesIds.ContainsKey(fromHandle)) return;
             if (!_userAllowedSeriesIds[fromHandle].Contains(parameters)) return;
-            var Query = $"/?cmd=show.addnew&tvdbid={parameters}";
+            var Query = $"/?cmd=show.addnew&tvdbid={parameters}&initial=hdtv|rawhdtv|fullhdtv|hdwebdl|fullhdwebdl|hdbluray|fullhdbluray&status=wanted";
             using (var httpClient = new HttpClient())
             {
                 var res = await httpClient.GetStringAsync(sickBeardUrl + sickBeardApiKey + Query);
