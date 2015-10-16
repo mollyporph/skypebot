@@ -97,6 +97,7 @@
     <Compile Include="IChatBot.cs" />
     <Compile Include="Services\couchpotato\model\Movie.cs" />
     <Compile Include="Services\couchpotato\model\MoviesModel.cs" />
+    <Compile Include="Services\diceservice\DiceService.cs" />
     <Compile Include="Services\IChatBotService.cs" />
     <Compile Include="Services\repostpolice\model\insult.cs" />
     <Compile Include="Program.cs">
@@ -167,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\authorization\model\" />
+    <Folder Include="Services\diceservice\model\" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="SKYPE4COMLib">
