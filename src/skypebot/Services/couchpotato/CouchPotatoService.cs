@@ -28,6 +28,7 @@ namespace skypebot.Services.couchpotato
             _userAllowedMovieIds = new Dictionary<string, List<string>>();
             _authorizationManager = authorizationManager;
             _chatBot = chatBot;
+            _chatBot.RegisterGlobalClockHandler(CheckStatusAndNotifyUsers);
         }
 
         public bool CanHandleCommand(string command)
@@ -35,6 +36,10 @@ namespace skypebot.Services.couchpotato
             return Commands.Contains(command);
         }
 
+        public void CheckStatusAndNotifyUsers()
+        {
+            //todo: implement
+        }
         public void HandleCommand(string fromHandle, string fromDisplayName, string command, string parameters)
         {
             var minimumCapLength = Math.Min(parameters.Length, 150);
@@ -107,6 +112,7 @@ namespace skypebot.Services.couchpotato
         {
 
             if (!Regex.IsMatch(movieIdentifier, @"tt\d{7}")) return;
+            if (!_userAllowedMovieIds.ContainsKey(fromHandle)) return;
             if (!_userAllowedMovieIds[fromHandle].Contains(movieIdentifier)) return;
             using (var httpClient = new HttpClient())
             {

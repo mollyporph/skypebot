@@ -66,7 +66,7 @@ namespace skypebot.Utility
         {
             using (var ctx = new UserContext())
             {
-                var user = ctx.Users.FirstOrDefault(x => x.Handle == handle);
+                var user = ctx.Users.Include("Permissions").FirstOrDefault(x => x.Handle == handle);
                 if (user == null)
                 {
                     user = new User
@@ -80,7 +80,8 @@ namespace skypebot.Utility
                 {
                     //User already has permission
                     if (user.Permissions.ToPermissionStrings().Contains(permission)) return false;
-                    user.Permissions.Add(new Permission { Uri = permission });
+                    var permissionToAdd = ctx.Permissions.FirstOrDefault(x => x.Uri == permission);
+                    user.Permissions.Add(permissionToAdd);
                 }
                 
                 ctx.SaveChanges();

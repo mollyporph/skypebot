@@ -34,9 +34,12 @@ namespace skypebot
         public SysTrayApp()
         {
             InitializeTrayApp();
-
+//#if DEBUG
+//#else
             RecreatePermissionTable();
             RecreateAdminUserIfMissing();
+//#endif
+
 
             InitializeChatBotModule();
 
@@ -56,7 +59,13 @@ namespace skypebot
         {
             IKernel kernel = new StandardKernel(new ChatBotModule());
             _chatBot = kernel.Get<IChatBot>();
+          
+
+#if DEBUG
+            _chatBot.JoinChat(@"#nattregnet/$live:mollyporph;c5f2c6d028f48edb");
+#else
             _chatBot.JoinChat(@"#jonar90/$nattregnet;f00327a27dd370f5");
+#endif
             _timer = new Timer(2000);
             _timer.Elapsed += _timer_Elapsed;
             _timer.Start();
@@ -64,7 +73,12 @@ namespace skypebot
 
         private void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+            
+#if DEBUG
+            _chatBot.PrintMessages(skype.Chat[@"#nattregnet/$live:mollyporph;c5f2c6d028f48edb"]);
+#else
             _chatBot.PrintMessages(skype.Chat[@"#jonar90/$nattregnet;f00327a27dd370f5"]);
+#endif
         }
 
         private void InitializeTrayApp()
@@ -89,7 +103,7 @@ namespace skypebot
             //Wohoo, EF6-foo 10/10
             using (var ctx = new UserContext())
             {
-                var adminUser = ctx.Users.FirstOrDefault(x => x.Handle == "nattregnet");
+                var adminUser = ctx.Users.Include("Permissions").FirstOrDefault(x => x.Handle == "nattregnet");
                 var permissions = ctx.Permissions.ToList();
                 if (adminUser == null)
                 {
@@ -106,8 +120,12 @@ namespace skypebot
                 {
                     if (adminUser.Permissions == null || !adminUser.Permissions.Equals(permissions))
                     {
-                        adminUser.Permissions = adminUser.Permissions == null ? permissions : new List<Permission>(adminUser.Permissions.Union(permissions));
-
+                        if (adminUser.Permissions != null)
+                            permissions.Except(adminUser.Permissions).ToList().ForEach(x => adminUser.Permissions.Add(x));
+                        else
+                        {
+                            adminUser.Permissions = new List<Permission>(permissions);
+                        }
                     }
                     //Coherence is wierd :/
 
@@ -130,11 +148,8 @@ namespace skypebot
 
             using (var ctx = new UserContext())
             {
-                var objCtx = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)ctx).ObjectContext;
-                objCtx.ExecuteStoreCommand("DELETE FROM Permissions " +
-                                           "DBCC CHECKIDENT ('Permissions', RESEED, 0)");
-
-                serviceTypes.ForEach(x => ctx.Permissions.Add(new Permission() { Uri = x }));
+                var permissions = ctx.Permissions.Select(x => x.Uri).ToList();
+                serviceTypes.Except(permissions).ToList().ForEach(x => ctx.Permissions.Add(new Permission() { Uri = x }));
                 ctx.SaveChanges();
             }
 

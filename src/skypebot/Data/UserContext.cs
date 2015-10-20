@@ -6,6 +6,13 @@ namespace skypebot.Data
 {
     public class UserContext : DbContext
     {
+#if DEBUG
+#else
+        public UserContext() : base("UserContext")
+        {
+            
+        }
+#endif
         public DbSet<User> Users { get; set; }
 
         public DbSet<Permission> Permissions { get; set; }
